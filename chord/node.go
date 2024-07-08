@@ -378,7 +378,6 @@ func (n *Node) Maintain() {
 
 //初始化一个结点
 func (node *Node) Init(addr string) {
-	logrus.Info("Enter Init: ", addr, node.Addr)
 	node.Addr = addr
 	node.Id = Hash(addr)
 	node.nodeinf.Addr, node.nodeinf.Id = node.Addr, node.Id
