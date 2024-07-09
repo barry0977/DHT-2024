@@ -2,7 +2,6 @@ package chord
 
 import (
 	"errors"
-	"fmt"
 	"math/big"
 	"net"
 	"net/rpc"
@@ -688,9 +687,4 @@ func (node *Node) Delete(key string) bool {
 		return false
 	}
 	return true
-}
-
-func (node *Node) Check(i int) {
-	// fmt.Printf("[%d]self: %s  pre: %s  suc: [0]%s  [1]%s  [2]%s\n", i, node.Addr, node.predecessor, node.successor[0], node.successor[1], node.successor[2])
-	fmt.Printf("[%d]self: %s  pre: %s  suc: [0]%s\n", i, node.Addr, node.predecessor, node.successor[0])
 }
