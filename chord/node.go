@@ -2,7 +2,6 @@ package chord
 
 import (
 	"errors"
-	"fmt"
 	"math/big"
 	"net"
 	"net/rpc"
@@ -216,7 +215,6 @@ func (n *Node) ClosestPrecedingFinger(id *big.Int, reply *string) error {
 	for i := 160; i > 1; i-- { //finger_node[1]就是successor[0],因为FixFinger的时候没有维护finger_node[1],所以这里用successor[0]来判断
 		err := n.RemoteCall(n.finger_node[i], "Node.Ping", "", nil)
 		if err != nil { //finger_node[i]不在线
-			logrus.Error(n.Addr, " 的finger ", n.finger_node[i], " 已经下线")
 			if i == 160 {
 				n.finger_node[i] = n.Addr
 			} else {
@@ -279,10 +277,7 @@ func (n *Node) Stabilize() {
 		n.finger_node[1] = suc
 		n.finger_nodelock.Unlock()
 	}
-	err := n.RemoteCall(suc, "Node.Notify", n.Addr, nil)
-	if err != nil {
-		logrus.Error(suc, "'s Notify Failed, to ", n.Addr)
-	}
+	n.RemoteCall(suc, "Node.Notify", n.Addr, nil)
 }
 
 func (node *Node) CheckPredecessor() {
@@ -290,7 +285,6 @@ func (node *Node) CheckPredecessor() {
 	if node.predecessor != "" {
 		err := node.RemoteCall(node.predecessor, "Node.Ping", "", nil)
 		if err != nil { //前驱掉线,则置为空，等待notify
-			logrus.Info(node.Addr, " 的前驱 ", node.predecessor, " 掉线，恢复备份")
 			node.predecessorlock.Lock()
 			node.predecessor = ""
 			node.predecessorlock.Unlock()
@@ -323,10 +317,7 @@ func (n *Node) Notify(n_ string, reply *struct{}) error {
 		n.predecessorlock.Unlock()
 		if n_ != n.Addr {
 			//把属于n_的数据转移给n_
-			err := n.RemoteCall(n_, "Node.Filter", n.Addr, nil)
-			if err != nil {
-				logrus.Info("转移数据失败: 从 ", n.Addr, " 到 ", n_, " ", err)
-			}
+			n.RemoteCall(n_, "Node.Filter", n.Addr, nil)
 			//把n的备份给n_
 			n.RemoteCall(n_, "Node.BackupForward", n.Addr, nil)
 			//把n_的数据备份到n中
@@ -378,7 +369,6 @@ func (n *Node) Maintain() {
 
 //初始化一个结点
 func (node *Node) Init(addr string) {
-	logrus.Info("Enter Init: ", addr, node.Addr)
 	node.Addr = addr
 	node.Id = Hash(addr)
 	node.nodeinf.Addr, node.nodeinf.Id = node.Addr, node.Id
@@ -697,9 +687,4 @@ func (node *Node) Delete(key string) bool {
 		return false
 	}
 	return true
-}
-
-func (node *Node) Check(i int) {
-	// fmt.Printf("[%d]self: %s  pre: %s  suc: [0]%s  [1]%s  [2]%s\n", i, node.Addr, node.predecessor, node.successor[0], node.successor[1], node.successor[2])
-	fmt.Printf("[%d]self: %s  pre: %s  suc: [0]%s\n", i, node.Addr, node.predecessor, node.successor[0])
 }
