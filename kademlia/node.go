@@ -208,7 +208,6 @@ func (node *Node) SearchAlpha(res *Answerlist, todolist []string, length int, ta
 	var lock sync.Mutex
 	var wg sync.WaitGroup
 	wg.Add(length)
-	// logrus.Info("SearchAlpha len: ", length)
 	for i := 0; i < length; i++ {
 		go func(addr string) {
 			defer wg.Done()
@@ -217,7 +216,6 @@ func (node *Node) SearchAlpha(res *Answerlist, todolist []string, length int, ta
 			node.Flush(addr, nil)
 			err := node.RemoteCall(addr, "Node.RPCFindNode", sr, &tmp)
 			if err != nil { //remotecall失败,从答案列表中删去
-				// logrus.Info(node.Addr, " 删除掉线节点 ", addr)
 				is := res.Delete(addr)
 				if is {
 					logrus.Info("删除节点成功：", addr)
@@ -245,12 +243,10 @@ func (node *Node) Lookup(addr string, res *[]string) error {
 	tmplist.Anslist.Init(addr)
 	node.FindNode(addr, &tmplist) //从自己的bucket中找到k个最近的
 	for {
-		// logrus.Info("进入Lookup的循环: ", node.Addr, " for ", addr)
 		todolist, len := tmplist.GetAlpha()
 		newlist := node.SearchAlpha(&tmplist, todolist, len, addr) //得到返回的新一轮列表
 		ismodified := false
 		for _, possi := range newlist { //将获取的可能的节点列表更新答案列表
-			// logrus.Info("尝试插入新节点: ", possi)
 			is := tmplist.Insert(node, possi)
 			if is {
 				ismodified = true
@@ -270,11 +266,9 @@ func (node *Node) Lookup(addr string, res *[]string) error {
 			break
 		}
 	}
-	// logrus.Info("结束Lookup的循环: ", node.Addr, " for ", addr, " 数量为 ", tmplist.Anslist.Size)
 	if res != nil {
 		*res = make([]string, 0, k)
 		for i := 0; i < tmplist.Anslist.Size; i++ {
-			// logrus.Info("Lookup到的第 ", i, " 个节点为 ", tmplist.Anslist.Buckets[i])
 			*res = append(*res, tmplist.Anslist.Buckets[i])
 		}
 	}
@@ -333,13 +327,11 @@ func (node *Node) RPCFindValue(sr SRid, reply *DataNodes) error {
 //参数中res是目前找到的k个最近节点，todolist是选出的a个节点，target是要查找的目标地址
 func (node *Node) SearchData(res *Answerlist, todolist []string, length int, target string) ([]string, Pair) {
 	var tmplist []string
-	// logrus.Info("SearchAlpha len: ", length)
 	for i := 0; i < length; i++ {
 		var tmp DataNodes
 		sr := SRid{node.Addr, todolist[i], target}
 		node.Flush(todolist[i], nil)
 		err := node.RemoteCall(todolist[i], "Node.RPCFindValue", sr, &tmp)
-		// logrus.Info("从 ", todolist[i], " 中找数据 ", target)
 		if err != nil { //remotecall失败,从答案列表中删去
 			res.Delete(todolist[i])
 			continue
