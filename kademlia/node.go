@@ -385,7 +385,6 @@ func (node *Node) LookupValue(key string, ans *Answerlist) (bool, string) {
 }
 
 func (node *Node) RepublishAll() {
-	logrus.Info("执行RepublishAll: ", node.Addr)
 	var wg sync.WaitGroup
 	for _, value := range node.data {
 		wg.Add(1)
@@ -505,7 +504,6 @@ func (node *Node) Get(key string) (bool, string) {
 			return true, value
 		}
 	}
-	logrus.Info("Get Failed ", key, " from ", node.Addr)
 	return false, ""
 }
 
