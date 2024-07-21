@@ -359,7 +359,6 @@ func (node *Node) SearchData(res *Answerlist, todolist []string, length int, tar
 
 //对应Lookup
 func (node *Node) LookupValue(key string, ans *Answerlist) (bool, string) {
-	// logrus.Info("Lookup中tmplist长度: ", ans.Anslist.Size)
 	for {
 		todolist, len := ans.GetAlpha()
 		newlist, data := node.SearchData(ans, todolist, len, key) //得到返回的新一轮列表
@@ -419,7 +418,6 @@ func (node *Node) RepublishData(data Pair) {
 			} else {
 				node.Flush(addr, nil)
 				obj := SRdata{node.Addr, addr, data}
-				// logrus.Info("把数据 ", data.Key, " 转移到 ", addr)
 				node.RemoteCall(addr, "Node.RPCStore", obj, nil)
 			}
 		}(nodelist[i])
@@ -482,12 +480,10 @@ func (node *Node) Put(key string, value string) bool {
 	var wg sync.WaitGroup
 	wg.Add(len(nodelist))
 	flag := false
-	// logrus.Info("尝试Put到 ", len(nodelist), " 个节点")
 	for i := 0; i < len(nodelist); i++ {
 		go func(addr string) {
 			defer wg.Done()
 			if addr == node.Addr {
-				// logrus.Info("把数据 ", key, " 储存到 ", addr)
 				node.Store(Pair{key, value}, nil)
 			} else {
 				srdata := SRdata{node.Addr, addr, Pair{key, value}}
@@ -496,7 +492,6 @@ func (node *Node) Put(key string, value string) bool {
 					logrus.Error("Put Failed, key: ", key, " from ", addr, " ", err)
 					return
 				}
-				// logrus.Info("把数据 ", key, " 储存到 ", addr)
 				node.Flush(addr, nil)
 			}
 			flag = true
@@ -509,15 +504,12 @@ func (node *Node) Put(key string, value string) bool {
 // Get a key-value pair from the network.
 // Return "true" and the value if success, "false" otherwise.
 func (node *Node) Get(key string) (bool, string) {
-	// logrus.Info("进入Get: ", key, " from ", node.Addr)
 	tmp := node.FindValue(key)
 	if tmp.Finddata {
-		// logrus.Info("Get: 找到 ", key, " from ", node.Addr)
 		return true, tmp.Data.Value
 	} else {
 		ok, value := node.LookupValue(key, &tmp.Nodes)
 		if ok {
-			// logrus.Info("Get: 找到 ", key, " 通过lookup")
 			return true, value
 		}
 	}

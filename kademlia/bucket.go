@@ -199,7 +199,6 @@ func (ans *Answerlist) GetAlpha() ([]string, int) { //找到a个未被访问过�
 	ans.Anslock.RLock()
 	for i := ans.Anslist.Size - 1; i >= 0; i-- {
 		if !ans.Anslist.Visit[ans.Anslist.Buckets[i]] { //如果未被访问过
-			// logrus.Info("发现未被访问过节点： ", ans.Anslist.Buckets[i])
 			reslist = append(reslist, ans.Anslist.Buckets[i])
 			length++
 		}
